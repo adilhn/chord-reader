@@ -948,7 +948,7 @@ function renderFree() {
   }
   svgEl.innerHTML = s;
   trackEl = null;
-  panelEl.className = live.length || !an ? '' : 'frozen';
+  panelEl.classList.toggle('frozen', !live.length && !!an);   // keep the show-* classes intact
   panelEl.innerHTML = panelHTML(an, key, !live.length);
 }
 
