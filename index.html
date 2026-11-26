@@ -149,7 +149,7 @@
   <div class="stat show-quiz"><b id="acc">–</b><span id="accSub">accuracy</span></div>
   <div class="stat show-random"><b id="keyName1">C</b><span>key</span></div>
   <button class="statbtn show-pick" id="keyPickBtn" title="Choose key"><b id="keyName2">C</b><span>key ▾</span></button>
-  <button class="statbtn show-quiz show-random show-pick" id="notaBtn" title="Switch Roman / Nashville numbers"><b id="notaB">IV</b><span id="notaS">roman</span></button>
+  <button class="statbtn show-random show-pick" id="notaBtn" title="Switch Roman / Nashville numbers"><b id="notaB">IV</b><span id="notaS">roman</span></button>
   <button class="icon show-quiz show-random" id="newBtn" title="New round" aria-label="New">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg>
   </button>
@@ -192,7 +192,7 @@
         <button data-v="random">Free play, random key</button><button data-v="pick">Free play, choose key</button>
       </div>
     </section>
-    <section data-for="quiz random pick">
+    <section data-for="random pick">
       <div class="lbl">Chord numbers</div>
       <div class="group" data-k="notation">
         <button data-v="roman">Roman (iv, ♭VII)</button><button data-v="nashville">Nashville (4-, ♭7)</button>
@@ -780,7 +780,7 @@ function success() {
   const ch = cur(), first = !chordMissed;
   round.results.push(first);
   stats.done++; if (first) stats.first++;
-  message = (first ? '✓ ' : 'Got it: ') + ch.name + ' · ' + fnHTML(ch.an);
+  message = (first ? '✓ ' : 'Got it: ') + ch.name;
   tone = first ? 'good' : 'warn';
   round.idx++; fresh = false; resetChord();
   flash = 'good'; clearTimeout(flashTimer);
@@ -798,7 +798,7 @@ function finishRound() {
   document.getElementById('doneSub').textContent = ok + ' of ' + n + ' first try';
   const missed = round.chords.filter((c, i) => !round.results[i]);
   document.getElementById('doneMissed').innerHTML = missed.length
-    ? 'Missed: ' + missed.map(c => c.name + ' (' + fnHTML(c.an) + ')').join(', ') : '';
+    ? 'Missed: ' + missed.map(c => c.name).join(', ') : '';
   setTimeout(() => { if (state === 'done' && !isFree()) document.getElementById('doneBox').classList.remove('hidden'); }, 380);
   message = 'Round complete'; tone = 'muted';
 }
@@ -896,7 +896,6 @@ function drawChord(ch, i) {
   if (done) {
     const c = round.results[i] ? COL.good : COL.warn;
     out += `<text x="${x}" y="${BB + 45}" text-anchor="middle" font-size="12.5" font-weight="700" fill="${c}">${ch.name}</text>`;
-    out += fnSVG(ch.an, x, BB + 60, c);
   }
   return out;
 }
