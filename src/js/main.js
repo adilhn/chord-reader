@@ -558,3 +558,14 @@ window.__chordReader = {
 
 enterMode(null);
 initMidi();
+
+/* ---------- Offline support (installable app) ---------- */
+// The service worker needs a secure context: https, or localhost during development.
+if ('serviceWorker' in navigator &&
+    (location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1')) {
+  const registerSW = () => {
+    try { navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) { /* offline support is optional */ }
+  };
+  if (document.readyState === 'complete') registerSW();
+  else window.addEventListener('load', registerSW, { once: true });
+}
