@@ -63,14 +63,18 @@ function diagnose(played, ch, exact) {
       return 'Right chord, ' + o + ' octave' + (o > 1 ? 's' : '') + (d > 0 ? ' too high' : ' too low');
     }
   }
+  const plural = (n, word) => n + ' ' + word + (n > 1 ? 's' : '');
   if (pcs(p) === pcs(t)) {
+    // Every note name is right: the problem is doubling, inversion or spacing.
+    if (p.length > t.length) return 'Right notes, plus ' + plural(p.length - t.length, 'extra note');
     if (p[0] % 12 !== t[0] % 12) return 'Right notes, wrong inversion: check the bottom note';
     return 'Right notes, but spaced differently';
   }
   const hit = m => exact ? t.includes(m) : t.some(x => x % 12 === m % 12);
   const wrong = p.filter(m => !hit(m)).length;
-  if (!wrong && p.length > t.length) return 'Not quite: ' + (p.length - t.length) + ' extra note' + (p.length - t.length > 1 ? 's' : '');
-  return 'Not quite: ' + wrong + ' of your notes ' + (wrong === 1 ? 'is' : 'are') + ' not in the chord (red)';
+  if (wrong) return 'Not quite: ' + wrong + ' of your notes ' + (wrong === 1 ? 'is' : 'are') + ' not in the chord (red)';
+  const missing = new Set(t.map(m => m % 12)).size - new Set(p.map(m => m % 12)).size;
+  return 'Not quite: ' + plural(missing, 'chord note') + ' missing';
 }
 
 export { makeChord, ROUND_TYPES, buildRound, matches, diagnose };

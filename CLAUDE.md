@@ -10,8 +10,14 @@ Chord-reading trainer for Android Chrome with a USB MIDI piano (Web MIDI). Grand
 - `src/js/analysis.js`: chord templates (`TPL`), `identify`, `analyze(midis, key)`, secondary dominants, and the chord-number labels `fnHTML(an, notation)` / `fnSVG(an, x, y, color, notation)`.
 - `src/js/quiz.js`: `makeChord(key, deg, inv, oct)`, `buildRound(opts, lastKeyName, rand)`, `ROUND_TYPES`, `matches(ch, notes, exact)`, `diagnose(played, ch, exact)`.
 - `src/js/main.js`: everything with state or a DOM: settings (localStorage key `chordReader.settings`), quiz flow, SVG drawing, MIDI input, wake lock, settings and key sheets, and the test hook `window.__chordReader`.
-- `index.html` (repo root): the old hand-built single file. Leave it alone; it is not built or deployed.
+- `src/manifest.webmanifest`, `src/sw.js`, `src/icons/`: installable app (PWA). main.js registers sw.js on https and localhost only.
 - `scripts/build.mjs`, `tests/`, `.github/workflows/deploy.yml`: build, tests, deploy.
+
+## Installable app (PWA)
+
+- sw.js is network-first for every same-origin GET (with `cache: 'no-cache'`, because GitHub Pages sends `max-age=600`), and falls back to the cache offline. Online users always get the latest deploy.
+- Its cache name includes the scope path and `__BUILD_VERSION__` (replaced by the build). A new version deletes only this app's older caches; other project sites on adilhn.github.io share the origin.
+- Offline works straight after install only in the built site, where CSS and JS are inlined. When serving src/, one online reload is needed first.
 
 ## Rules
 
@@ -35,12 +41,11 @@ Chord-reading trainer for Android Chrome with a USB MIDI piano (Web MIDI). Grand
 ## Testing
 
 - `npm test` runs `node --test "tests/*.test.js"` (node:test and node:assert only, no dependencies). Note that `node --test tests/` does not work on Node 22: a directory is not expanded.
-- One test in tests/quiz.test.js is marked `todo`: `diagnose` reports "spaced differently" instead of "1 extra note" when the whole chord is played plus a doubled note. Remove the `todo` once that is fixed.
 - Browser smoke test: build, serve `dist/` with `python3 -m http.server`, then load it in headless Chrome (Python Playwright, `p.chromium.launch(executable_path='/usr/bin/google-chrome', args=['--no-sandbox'])`) and drive it through `window.__chordReader`:
   - `noteOn(m)`, `noteOff(m)`, `pedalChange(v)` to play.
   - `round`, `state`, `stats`, `settings` to inspect (getters).
   - `setSettings({mode: 'pick', pickKey: 'C'})` to change modes, `setRandomKey(name)`, `startRound()`.
-  - In headless Chrome MIDI shows as blocked, and the only expected console error is a 404 for favicon.ico.
+  - In headless Chrome MIDI shows as blocked; there should be no console errors.
 - For the source version, serve the repo root and open `/src/index.html` (ES modules do not load from file://).
 
 ## Build and deploy

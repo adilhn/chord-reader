@@ -170,13 +170,15 @@ describe('matches and diagnose', () => {
     assert.match(diagnose([61, 65, 68], ch, true), /3 of your notes are not in the chord/);
   });
 
-  // Suspected bug in quiz.js: the chord plus a doubled chord tone (C4 E4 G4 C5) is reported as
-  // "Right notes, but spaced differently", because the pitch-class check runs before the extra-note
-  // check. With exact = true the "extra note" message can never be reached. With exact = false it is
-  // only reached when a chord tone is missing (C4 E4 C5 E5 says "1 extra note" though G is missing).
-  // Marked todo so it is reported without failing the suite; drop the todo once diagnose is fixed.
-  it('says "extra note" for the whole chord plus a doubled note', { todo: 'diagnose checks pitch classes before extra notes' }, () => {
-    assert.match(diagnose([60, 64, 67, 72], ch, true), /1 extra note/);
-    assert.match(diagnose([60, 64, 67, 72], ch, false), /1 extra note/);
+  it('says "extra note" for the whole chord plus a doubled note', () => {
+    assert.match(diagnose([60, 64, 67, 72], ch, true), /plus 1 extra note$/);
+    assert.match(diagnose([60, 64, 67, 72], ch, false), /plus 1 extra note$/);
+    assert.match(diagnose([48, 60, 64, 67, 72], ch, true), /plus 2 extra notes$/);
+  });
+
+  it('says a chord note is missing when only chord tones are played', () => {
+    assert.match(diagnose([60, 64, 72, 76], ch, false), /1 chord note missing/);
+    // With exact octaves, the doubled C5 and E5 are not chord notes
+    assert.match(diagnose([60, 64, 72, 76], ch, true), /2 of your notes are not in the chord/);
   });
 });
