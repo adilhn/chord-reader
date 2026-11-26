@@ -1,0 +1,14 @@
+{
+  "name": "chord-reader",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Chord-reading trainer for a MIDI piano in Android Chrome",
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "test": "node --test \"tests/*.test.js\""
+  },
+  "devDependencies": {
+    "esbuild": "0.28.2"
+  }
+}
