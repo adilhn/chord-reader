@@ -19,6 +19,12 @@ Chord-reading trainer for Android Chrome with a USB MIDI piano (Web MIDI). Grand
 - Its cache name includes the scope path and `__BUILD_VERSION__` (replaced by the build). A new version deletes only this app's older caches; other project sites on adilhn.github.io share the origin.
 - Offline works straight after install only in the built site, where CSS and JS are inlined. When serving src/, one online reload is needed first.
 
+## MIDI start-up
+
+- Chrome on Android sometimes fails to start its MIDI layer: requestMIDIAccess rejects with InvalidStateError. Calling it again from the same page returns the same cached error, so the in-app fix is a fresh page.
+- main.js reloads automatically up to `MIDI_AUTO_RELOADS` times per tab (counted in sessionStorage), then shows a note (`#midiNote`) with reset steps. Tapping the red status reloads. It only asks for MIDI while the page is visible, and reloads when it comes back to the foreground after a failure.
+- NotAllowedError / SecurityError are permission problems and get a different note, without auto-reloads.
+
 ## Rules
 
 - theory.js, analysis.js and quiz.js stay pure: no DOM, no `settings`, no module-level mutable state. Anything that depends on a setting is a parameter (`notation` for fnHTML/fnSVG, `exact` for matches/diagnose). Randomness comes in as a `rand` function so tests can seed it.
