@@ -21,9 +21,9 @@ Chord-reading trainer for Android Chrome with a USB MIDI piano (Web MIDI). Grand
 
 ## MIDI start-up
 
-- Chrome on Android sometimes fails to start its MIDI layer: requestMIDIAccess rejects with InvalidStateError. Calling it again from the same page returns the same cached error, so the in-app fix is a fresh page.
-- main.js reloads automatically up to `MIDI_AUTO_RELOADS` times per tab (counted in sessionStorage), then shows a note (`#midiNote`) with reset steps. Tapping the red status reloads. It only asks for MIDI while the page is visible, and reloads when it comes back to the foreground after a failure.
-- NotAllowedError / SecurityError are permission problems and get a different note, without auto-reloads.
+- Chrome on Android sometimes fails to start its MIDI layer: requestMIDIAccess rejects with InvalidStateError. Asking again from the same page returns the same error, and reloading the page does not fix it (tried and reverted). Which reset works reliably (force-stopping Chrome, replugging the keyboard) is not yet established; root cause is under investigation.
+- main.js only asks for MIDI while the page is visible, asks again when it returns to the foreground after a failure or when the red status is tapped, and shows the error name and message in `#midiNote`.
+- NotAllowedError / SecurityError are permission problems and get their own note.
 
 ## Rules
 

@@ -400,13 +400,10 @@ function renderAll() {
 
 /* ---------- MIDI ---------- */
 // Chrome sometimes fails to start its MIDI layer and rejects with InvalidStateError. Asking again from
-// the same page returns the same cached error, so the only in-app fix is a fresh page: we reload,
-// automatically up to MIDI_AUTO_RELOADS times per tab (counted in sessionStorage), and then by tap.
-// We only ask while the app is on screen, and reload when it comes back to the foreground after a failure.
+// the same page returns the same error, and reloading the page did not help either, so we do not
+// auto-retry. We only ask while the page is visible, ask again when it returns to the foreground,
+// and show the error name and message so the cause can be diagnosed.
 let midiAccess = null, midiState = 'starting', midiPending = false;
-const MIDI_AUTO_RELOADS = 2, RELOAD_KEY = 'chordReader.midiReloads';
-const reloadCount = () => { try { return +sessionStorage.getItem(RELOAD_KEY) || 0; } catch (e) { return 0; } };
-const setReloadCount = n => { try { sessionStorage.setItem(RELOAD_KEY, String(n)); } catch (e) {} };
 function setMidi(stateName, text) {
   const colors = { ok: '#34c46a', waiting: '#e5a823', none: '#6b7280', error: '#e05252' };
   document.getElementById('midiDot').style.background = colors[stateName];
@@ -451,34 +448,24 @@ async function initMidi() {
     midiAccess = access; midiState = 'ok';
     midiAccess.onstatechange = bindInputs;
     bindInputs();
-    setReloadCount(0);
     setMidiNote('');
   } catch (err) {
-    const name = (err && err.name) || 'Error';
+    const name = (err && err.name) || 'Error', detail = (err && err.message) ? ': ' + err.message : '';
     midiState = 'error';
     if (/^(content|file):$/.test(location.protocol)) {
       setMidi('error', 'MIDI blocked');
       setMidiNote('Chrome won’t give MIDI to a page opened from a file. Open this page from an https:// link instead.');
     } else if (name === 'NotAllowedError' || name === 'SecurityError') {
-      setMidi('error', 'MIDI not allowed · tap to reload');
+      setMidi('error', 'MIDI not allowed · tap to retry');
       setMidiNote('MIDI is turned off for this site. In Chrome, tap the icon left of the address, open Permissions, and allow MIDI devices. Then tap the red status.');
-    } else if (reloadCount() < MIDI_AUTO_RELOADS) {
-      // InvalidStateError and anything unexpected: Chrome's MIDI system failed to start. Try a fresh page.
-      setMidi('waiting', 'MIDI didn’t start · reloading…');
-      setReloadCount(reloadCount() + 1);
-      setTimeout(() => location.reload(), 1200);
     } else {
-      setMidi('error', 'MIDI stuck · tap to reload');
-      setMidiNote('Chrome’s MIDI system didn’t start (' + name + '), even after reloading. That happens inside Chrome, not in your keyboard or this app. ' +
-        'Close any other tabs that have Chord Reader open, then tap the red status. ' +
-        'If it’s still stuck, force-stop Chrome (Settings, Apps, Chrome, Force stop) and open the app again.');
+      setMidi('error', 'MIDI didn’t start · tap to retry');
+      setMidiNote('Chrome reported that its MIDI system failed to start (' + name + detail + '). ' +
+        'Things to try: force-stop Chrome (Settings, Apps, Chrome, Force stop), or unplug and replug the keyboard, then reopen the app.');
     }
   }
 }
-function retryMidi() {
-  if (midiState === 'error') { setReloadCount(0); location.reload(); }   // a fresh page is the only real retry
-  else initMidi();
-}
+function retryMidi() { initMidi(); }
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState !== 'visible') return;
   if (midiState === 'error') retryMidi();
