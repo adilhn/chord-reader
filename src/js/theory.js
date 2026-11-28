@@ -61,19 +61,22 @@ function ledgers(steps, st) {
 }
 // Whole chord on the staff that needs fewer ledger lines. On a tie, a chord whose middle note
 // is middle C or higher goes on the treble staff.
-function chooseStaff(notes) {
+// `prefer` ('T' or 'B'), when given, decides a tie instead of the middle note.
+function chooseStaff(notes, prefer) {
   const st = notes.map(n => n.step), t = ledgers(st, 'T'), b = ledgers(st, 'B');
   if (t !== b) return t < b ? 'T' : 'B';
+  if (prefer) return prefer;
   const ms = notes.map(n => n.midi).sort((a, b) => a - b), h = ms.length / 2;
   const mid = ms.length % 2 ? ms[Math.floor(h)] : (ms[h - 1] + ms[h]) / 2;
   return mid >= 60 ? 'T' : 'B';
 }
-// Free play: notes within an octave are treated as one hand and kept on one staff.
+// Played notes (free play, and the quiz's live column): notes within an octave are treated as one hand
+// and kept on one staff.
 // A wider spread is split at its biggest gap into two hands, and each hand gets its own staff.
 const HAND_SPAN = 12;
-function placeFree(notes) {
+function placeFree(notes, prefer) {
   const out = new Map();
-  const keep = grp => { const st = chooseStaff(grp); grp.forEach(n => out.set(n.midi, st)); };
+  const keep = grp => { const st = chooseStaff(grp, prefer); grp.forEach(n => out.set(n.midi, st)); };
   const span = grp => grp[grp.length - 1].midi - grp[0].midi;
   if (span(notes) <= HAND_SPAN) { keep(notes); return out; }
   let cut = 1, gap = -1;

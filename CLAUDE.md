@@ -45,6 +45,7 @@ Chord-reading trainer for Android Chrome with a USB MIDI piano (Web MIDI). Grand
 ## Product decisions to keep
 
 - A chord played by one hand stays on one staff. The staff with fewer ledger lines wins; on a tie, the middle note decides (middle C or higher goes on the treble staff). See `chooseStaff` and `placeFree`.
+- The notes you are playing are placed by the same rule as written chords: free play uses `placeFree(notes)`, and the quiz's live column uses `placeFree(notes, targetStaff)`, where the target chord's staff only breaks ties.
 - The quiz shows chord names only. No Roman or Nashville numbers in quiz mode.
 - Keep the 7-chord round (each scale degree once) alongside the 10 and 20 random-chord rounds.
 - No em dashes in UI text.

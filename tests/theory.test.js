@@ -51,4 +51,20 @@ describe('placeFree', () => {
   it('C3 E3 G3 C4 E4 G4 splits at the biggest gap', () => {
     assert.deepEqual(place([48, 52, 55, 60, 64, 67]), ['B', 'B', 'B', 'T', 'T', 'T']);
   });
+
+  // The quiz's live column passes the target chord's staff as `prefer`, used only to break ties.
+  const placePref = (midis, prefer) => {
+    const notes = analyze(midis, null).notes;
+    const map = placeFree(notes, prefer);
+    return notes.map(n => map.get(n.midi));
+  };
+  it('a tie goes to the preferred staff', () => {
+    assert.deepEqual(placePref([60], undefined), ['T']);
+    assert.deepEqual(placePref([60], 'B'), ['B']);
+    assert.deepEqual(placePref([55, 60, 64], 'B'), ['B', 'B', 'B']);
+  });
+  it('a preference never overrides fewer ledger lines', () => {
+    // F3 A3 C4 played against a treble-staff target (C4 E4 G4) still goes on the bass staff
+    assert.deepEqual(placePref([53, 57, 60], 'T'), ['B', 'B', 'B']);
+  });
 });

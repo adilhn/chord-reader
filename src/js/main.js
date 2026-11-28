@@ -272,13 +272,15 @@ function drawChord(ch, i) {
 
 function liveItems() {
   const ch = cur(), key = round.key;
-  return [...held].sort((a, b) => a - b).map(m => {
+  const items = [...held].sort((a, b) => a - b).map(m => {
     const sp = spell(m, key);
-    let st;
-    if (settings.split) st = sp.step < 28 ? 'B' : 'T';
-    else st = ledgers([sp.step], ch.staff) <= 3 ? ch.staff : (ch.staff === 'T' ? 'B' : 'T');
-    return { step: sp.step, acc: sp.acc, staff: st, sign: sp.sign, midi: m };
+    return { step: sp.step, acc: sp.acc, sign: sp.sign, midi: m };
   });
+  // Place what you play by the same rule as written chords, so a played chord looks the way it would be
+  // written. A tie goes to the target chord's staff, so a half-formed chord doesn't jump between staves.
+  const place = settings.split ? null : placeFree(items, ch.staff);
+  items.forEach(it => { it.staff = place ? place.get(it.midi) : (it.step < 28 ? 'B' : 'T'); });
+  return items;
 }
 function liveColor(it) {
   if (!chordMissed) return COL.accent;
