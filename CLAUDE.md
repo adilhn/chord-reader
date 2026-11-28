@@ -27,7 +27,7 @@ Chord-reading trainer for Android Chrome with a USB MIDI piano (Web MIDI). Grand
   - Chrome re-creates that backend whenever live Web MIDI sessions across the browser go from zero to one, so every load of this app when it is the only MIDI page.
   - Android's MidiService allows 16 listeners per client ("too many MIDI listeners for UID"). After about 16 backend creations, every initialization fails until the Chrome process dies.
   - Confirm with `adb shell dumpsys midi`: Chrome's `Client:` line shows `listener count: 16`. logcat shows "MIDI initialization error" with the SecurityException.
-- Reset: force-stop Chrome. Avoid unnecessary page reloads, since each fresh MIDI start may use up a slot.
+- Reset: force-stop Chrome (confirmed on the user's Pixel, 2026-11-28; reloading and retrying did not help). That fits the leak hypothesis but also a failure cached while other tabs hold MIDI sessions. To tell them apart: after a force-stop, reload the app repeatedly; failing at about the 17th load points to the leak. Avoid unnecessary page reloads, since each fresh MIDI start may use up a slot.
 - main.js asks for MIDI once per page while visible, asks again only after a failure (on foreground return or a tap on the red status), and shows the error name and message in `#midiNote`. NotAllowedError / SecurityError are permission problems and get their own note.
 
 ## Rules
