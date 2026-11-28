@@ -461,7 +461,7 @@ async function initMidi() {
     } else {
       setMidi('error', 'MIDI didn’t start · tap to retry');
       setMidiNote('Chrome reported that its MIDI system failed to start (' + name + detail + '). ' +
-        'Things to try: force-stop Chrome (Settings, Apps, Chrome, Force stop), or unplug and replug the keyboard, then reopen the app.');
+        'To reset it, force-stop Chrome (Settings, Apps, Chrome, Force stop) and reopen the app. Reloading or replugging the keyboard won’t clear it.');
     }
   }
 }

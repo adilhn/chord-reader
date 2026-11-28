@@ -21,9 +21,14 @@ Chord-reading trainer for Android Chrome with a USB MIDI piano (Web MIDI). Grand
 
 ## MIDI start-up
 
-- Chrome on Android sometimes fails to start its MIDI layer: requestMIDIAccess rejects with InvalidStateError. Asking again from the same page returns the same error, and reloading the page does not fix it (tried and reverted). Which reset works reliably (force-stopping Chrome, replugging the keyboard) is not yet established; root cause is under investigation.
-- main.js only asks for MIDI while the page is visible, asks again when it returns to the foreground after a failure or when the red status is tapped, and shows the error name and message in `#midiNote`.
-- NotAllowedError / SecurityError are permission problems and get their own note.
+- Chrome on Android sometimes fails to start its MIDI layer: requestMIDIAccess rejects with InvalidStateError ("Platform dependent initialization failed."). Asking again from the same page returns the same cached result, and reloading does not fix it (an auto-reload was tried and reverted).
+- Leading hypothesis, from reading Chromium and AOSP source, not yet confirmed on the device:
+  - Chromium's MidiManagerAndroid.java registers a new Android `DeviceCallback` on every `initialize()` and never unregisters it.
+  - Chrome re-creates that backend whenever live Web MIDI sessions across the browser go from zero to one, so every load of this app when it is the only MIDI page.
+  - Android's MidiService allows 16 listeners per client ("too many MIDI listeners for UID"). After about 16 backend creations, every initialization fails until the Chrome process dies.
+  - Confirm with `adb shell dumpsys midi`: Chrome's `Client:` line shows `listener count: 16`. logcat shows "MIDI initialization error" with the SecurityException.
+- Reset: force-stop Chrome. Avoid unnecessary page reloads, since each fresh MIDI start may use up a slot.
+- main.js asks for MIDI once per page while visible, asks again only after a failure (on foreground return or a tap on the red status), and shows the error name and message in `#midiNote`. NotAllowedError / SecurityError are permission problems and get their own note.
 
 ## Rules
 
